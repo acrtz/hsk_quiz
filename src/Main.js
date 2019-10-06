@@ -6,10 +6,12 @@ export default () => {
   useEffect(()=>{
     loadQuiz();
   });
+
   const loadQuiz = async() => {
     const words = await Student.getHskQuiz();
     console.log({words});
   }
+  
   return (
     <Main>
       <div>HSK QUIZ</div>
