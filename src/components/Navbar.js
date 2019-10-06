@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import AppContext from '../context/app';
 import styled from 'styled-components';
 
 export default () => {
+
+  const { student, setStudent } = useContext(AppContext);
+
   return (
     <Navbar>
       <Logo>LOGO</Logo>
       <Account>
-        <Username src='/'>student_Username</Username>
-        <Points>HSK: student_hsk</Points>
+        <Username src='/'>{student.username}</Username>
+        <Points>HSK: {student.hsk}</Points>
       </Account>
     </Navbar>
   )

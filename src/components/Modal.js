@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
-import AppContext from './context/app';
+import AppContext from '../context/app';
 import styled from 'styled-components';
 
 export default () => {
   const { modal, setModal } = useContext(AppContext);
-  
+
   if (!modal.type)
     return null;
 
