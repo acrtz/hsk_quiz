@@ -1,0 +1,20 @@
+html {
+  /* font-family: Arial; */
+  font-family: Helvetica;
+  font-size: 16px;
+  height: 100%;
+}
+body {
+  width: 100vw;
+  height: 100vh;
+  padding: 0px;
+  margin: 0px;
+}
+body {
+  margin: 0px;
+  width: 100vw;
+  height: 100vh;
+  margin: 0px;
+  padding: 0px;
+  overflow-x: hidden;
+}
