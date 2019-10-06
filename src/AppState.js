@@ -11,6 +11,8 @@ export default ({ children }) => {
   });
 
   const [modal, setModal] = useState({ type: null });
+  const [answers, setAnswers] = useState([]);
+  const [words, setWords] = useState([])
 
   return (
     // Insert the above states into context so all of the children
@@ -19,6 +21,8 @@ export default ({ children }) => {
       value={{
         student, setStudent,
         modal, setModal,
+        answers, setAnswers,
+        words, setWords
       }}
     >
       {children}
