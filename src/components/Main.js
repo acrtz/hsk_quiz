@@ -55,36 +55,42 @@ export default () => {
 // `;
 
 const Main = styled.div`
+  margin: 20px;
   display: grid;
-  grid-template: 100px 300px auto / 40px 40px 80px auto 80px 40px 40px;
+  grid-template: 100px 180px 300px / 40px 40px 80px auto 80px 40px 40px;
   grid-template-areas: 
-  ". p p p p p ."
+  "p p p p p p p"
   ". . . w . . ."
-  ". . a a a . .";
+  ". a a a a a .";
 `;
 
 const Progress = styled.progress`
   grid-area: p;
   justify-self: center;
   align-self: center;
+  width: 100%;
 `;
 
 const Word = styled.h1`
   grid-area: w;
   justify-self: center;
-  align-self: center;
+  align-self: baseline;
+  font-size: 40px;
 `;
 
 const Answers = styled.div`
   grid-area: a;
-  justify-self: center;
-  align-self: center;
+  align-items: auto;
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  grid-template: 1fr 1fr / 1fr 1fr;
 `
 
 const AnswerButton = styled.button`
-  width: 50%;
+  border-radius: 10px;
+  font-size: 20px;
+  margin: 15px;
+  background-color: rgb(221, 231, 251);
+  border: solid 4px rgb(199, 209, 229);
 `;
