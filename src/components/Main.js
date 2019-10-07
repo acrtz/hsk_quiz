@@ -2,25 +2,31 @@ import React, { useEffect, useContext, useState } from 'react';
 import styled from 'styled-components';
 import AppContext from '../context/app';
 import Student from '../api/student';
+import AnswerButton from './AnswerButton';
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * i)
+    const temp = arr[i]
+    arr[i] = arr[j]
+    arr[j] = temp
+  }
+  return arr;
+}
 
 export default () => {
   const { answers, setAnswers, words, setWords } = useContext(AppContext);
-  const { currentWord, setCurrentWord } = useState(null);
-
-  useEffect(() => {
-    const getWords = async () => {
-      const { words: { quiz } } = await loadQuiz();
-      setWords(quiz);
-      getNextWord([], 1)
-    }
-    getWords();
-  }, []);
+  const [possibleAnswers, setPossibleAnswers] = useState([]);
+  const [currentWord, setCurrentWord] = useState({});
+  const [error, setError] = useState(null);
 
   const getNextWord = (words, answers, level) => {
-    const currentLevelAnswers = words.filter(word => word.level === level);
-    const possibleAnswers = currentLevelAnswers.filter(word => !answers.includes(word));
-    console.log(possibleAnswers);
-    return;
+    const currentLevelWords = words.filter(word => word.level === level);
+    const answerDefinitions = answers.map(answer => answer.simplified)
+
+    const possibleWords = currentLevelWords.filter(word => !answerDefinitions.includes(word.simplified));
+
+    return possibleWords[Math.floor(Math.random() * possibleWords.length)];
   }
 
   const loadQuiz = async () => {
@@ -28,15 +34,50 @@ export default () => {
     return { words }
   }
 
+  const isSynonym = (targetWord, possibleSynonym) => {
+    const targetDefinitions = targetWord.definition.split(";").map(word => word.trim());
+    const synonymDefinitions = possibleSynonym.definition.split(";").map(word => word.trim());
+
+    for (let targetDef of targetDefinitions) {
+      if (synonymDefinitions.includes(targetDef)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  const createAnswers = (newWord, words) => {
+    // three random answers that are not synonym with the correct word
+    const answers = [newWord];
+
+    while (answers.length < 4) {
+      let randomWord = words[Math.floor(Math.random() * words.length)];
+      if (!isSynonym(newWord, randomWord)) {
+        answers.push(randomWord);
+      }
+    }
+    return shuffle(answers);
+  }
+
+  useEffect(() => {
+    const getWords = async () => {
+      const { words: { quiz } } = await loadQuiz().catch(err => console.log(err.message));
+      const newWord = getNextWord(quiz, [], 1);
+      const wordsWithoutNewWord = quiz.filter(word => word.definition !== newWord.definition)
+      setCurrentWord(newWord);
+      setWords(wordsWithoutNewWord);
+      setPossibleAnswers(createAnswers(newWord, wordsWithoutNewWord));
+    }
+    getWords();
+  }, []);
+
   return (
     <Main>
       <Progress completion={answers.length}></Progress>
-      <Word>星期</Word>
+      <Word>{currentWord.simplified}</Word>
       <Answers>
-        <AnswerButton>week; CL:個|个[ge4]</AnswerButton>
-        <AnswerButton>time; length of time; moment; period</AnswerButton>
-        <AnswerButton>time; length of time; moment; period</AnswerButton>
-        <AnswerButton>computer; CL:臺|台[tai2]</AnswerButton>
+        {possibleAnswers.map(answer => <AnswerButton definition={answer.definition} />)}
       </Answers>
     </Main>
   )
@@ -88,15 +129,3 @@ const Answers = styled.div`
   display: grid;
   grid-template: 1fr 1fr / 1fr 1fr;
 `
-
-const AnswerButton = styled.button`
-  border-radius: 10px;
-  font-size: 20px;
-  margin: 15px;
-  background-color: rgb(221, 231, 251);
-  border: solid 4px rgb(199, 209, 229);
-
-  :hover {
-    filter: brightness(105%);
-  }
-`;
