@@ -16,22 +16,21 @@ export default () => {
     getWords();
   }, []);
 
-  const getNextWord = (answers, level) => {
-    let answer;
-    console.log(answers);
-    console.log(level);
-    return answer;
+  const getNextWord = (words, answers, level) => {
+    const currentLevelAnswers = words.filter(word => word.level === level);
+    const possibleAnswers = currentLevelAnswers.filter(word => !answers.includes(word));
+    console.log(possibleAnswers);
+    return;
   }
 
   const loadQuiz = async () => {
     const words = await Student.getHskQuiz();
-    // console.log({ words });
     return { words }
   }
 
   return (
     <Main>
-      <Progress max={30} value={10}></Progress>
+      <Progress completion={answers.length}></Progress>
       <Word>星期</Word>
       <Answers>
         <AnswerButton>week; CL:個|个[ge4]</AnswerButton>
@@ -64,7 +63,10 @@ const Main = styled.div`
   ". a a a a a .";
 `;
 
-const Progress = styled.progress`
+const Progress = styled.progress.attrs(props => ({
+  max: "30",
+  value: props.completion
+}))`
   grid-area: p;
   justify-self: center;
   align-self: center;
@@ -93,4 +95,8 @@ const AnswerButton = styled.button`
   margin: 15px;
   background-color: rgb(221, 231, 251);
   border: solid 4px rgb(199, 209, 229);
+
+  :hover {
+    filter: brightness(105%);
+  }
 `;
