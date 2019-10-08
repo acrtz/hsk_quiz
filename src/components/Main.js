@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import AppContext from '../context/app';
 import Student from '../api/student';
 import AnswerButton from './AnswerButton';
+import { create } from 'handlebars';
 
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -18,7 +19,9 @@ export default () => {
   const { answers, setAnswers, words, setWords } = useContext(AppContext);
   const [possibleAnswers, setPossibleAnswers] = useState([]);
   const [currentWord, setCurrentWord] = useState({});
-  const [error, setError] = useState(null);
+  const [selectionMade, setSelectionMade] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState({});
+  const [currentLevel, setCurrentLevel] = useState(1);
 
   const getNextWord = (words, answers, level) => {
     const currentLevelWords = words.filter(word => word.level === level);
@@ -49,22 +52,56 @@ export default () => {
 
   const createAnswers = (newWord, words) => {
     // three random answers that are not synonym with the correct word
-    const answers = [newWord];
+    const answers = [{ ...newWord, correct: true, selected: false }];
 
     while (answers.length < 4) {
       let randomWord = words[Math.floor(Math.random() * words.length)];
       if (!isSynonym(newWord, randomWord)) {
-        answers.push(randomWord);
+        answers.push({ ...randomWord, correct: false, selected: false });
       }
     }
     return shuffle(answers);
   }
 
+  const recordSelection = (answer) => {
+    const selectedAnswer = {
+      ...answer,
+      selected: true
+    }
+    possibleAnswers.splice(possibleAnswers.indexOf(answer), 1, selectedAnswer)
+    setSelectedAnswer(selectedAnswer)
+    setPossibleAnswers(possibleAnswers.splice(possibleAnswers))
+    setSelectionMade(true)
+  }
+
+  const determineNextLevel = (answers) => {
+    let level = currentLevel
+    const latestAnswerIsCorrect = answers[answers.length - 1]['correct']
+
+    if (answers.length <= 1) {
+      console.log('not enough answers')
+      return level
+    }
+    if (latestAnswerIsCorrect && answers[answers.length - 2]['correct']) {
+      if (level !== 6) {
+        console.log('level is not 6, so increase')
+        level++
+      }
+      return level
+    }
+    if (level !== 1 && !latestAnswerIsCorrect) {
+      console.log("decrease. It's higher than level 1")
+      level--
+    }
+    return level
+  }
+
   useEffect(() => {
     const getWords = async () => {
-      const { words: { quiz } } = await loadQuiz().catch(err => console.log(err.message));
-      const newWord = getNextWord(quiz, [], 1);
+      const { words: { quiz } } = await loadQuiz().catch(err => console.log(err.message))
+      const newWord = getNextWord(quiz, [], 1)
       const wordsWithoutNewWord = quiz.filter(word => word.definition !== newWord.definition)
+      console.log(newWord)
       setCurrentWord(newWord);
       setWords(wordsWithoutNewWord);
       setPossibleAnswers(createAnswers(newWord, wordsWithoutNewWord));
@@ -72,12 +109,48 @@ export default () => {
     getWords();
   }, []);
 
+  useEffect(() => {
+    if (selectionMade) {
+      const newAnswers = [...answers, selectedAnswer]
+      if (selectedAnswer.correct === true) {
+        setTimeout(() => {
+          const newLevel = determineNextLevel(newAnswers)
+          const newWord = getNextWord(words, newAnswers, newLevel);
+          console.log(newWord)
+          const wordsWithoutNewWord = words.filter(word => word.definition !== newWord.definition)
+
+          setSelectionMade(false)
+          setAnswers(newAnswers)
+          setWords(wordsWithoutNewWord)
+          setCurrentWord(newWord)
+          setCurrentLevel(newLevel)
+          setPossibleAnswers(createAnswers(newWord, wordsWithoutNewWord))
+        }, 2000)
+      } else if (selectedAnswer.correct === false) {
+        setTimeout(() => {
+          const newLevel = determineNextLevel(newAnswers)
+          console.log(newLevel)
+          const newWord = getNextWord(words, newAnswers, newLevel);
+          console.log(newWord)
+          const wordsWithoutNewWord = words.filter(word => word.definition !== newWord.definition)
+
+          setSelectionMade(false)
+          setAnswers(newAnswers)
+          setWords(wordsWithoutNewWord)
+          setCurrentWord(newWord)
+          setCurrentLevel(newLevel)
+          setPossibleAnswers(createAnswers(newWord, wordsWithoutNewWord))
+        }, 3000)
+      }
+    }
+  }, [selectionMade])
+
   return (
     <Main>
       <Progress completion={answers.length}></Progress>
       <Word>{currentWord.simplified}</Word>
       <Answers>
-        {possibleAnswers.map(answer => <AnswerButton definition={answer.definition} />)}
+        {possibleAnswers.map(answer => <AnswerButton key={answer.definition} answer={answer} recordSelection={recordSelection} selectionMade={selectionMade} />)}
       </Answers>
     </Main>
   )
@@ -128,4 +201,9 @@ const Answers = styled.div`
   justify-content: center;
   display: grid;
   grid-template: 1fr 1fr / 1fr 1fr;
+`
+
+const SelectionStatusBox = styled.div`
+  color: ${props => props.status === 'incorrect' ? "red" : "green"};
+  text-transform: capitalized;
 `
