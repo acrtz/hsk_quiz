@@ -56,7 +56,7 @@ export default () => {
 
     while (answers.length < 4) {
       let randomWord = words[Math.floor(Math.random() * words.length)];
-      if (!isSynonym(newWord, randomWord)) {
+      if (!isSynonym(newWord, randomWord) && !answers.find(answer => answer.simplified === randomWord.simplified)) {
         answers.push({ ...randomWord, correct: false, selected: false });
       }
     }
@@ -79,18 +79,15 @@ export default () => {
     const latestAnswerIsCorrect = answers[answers.length - 1]['correct']
 
     if (answers.length <= 1) {
-      console.log('not enough answers')
       return level
     }
     if (latestAnswerIsCorrect && answers[answers.length - 2]['correct']) {
       if (level !== 6) {
-        console.log('level is not 6, so increase')
         level++
       }
       return level
     }
     if (level !== 1 && !latestAnswerIsCorrect) {
-      console.log("decrease. It's higher than level 1")
       level--
     }
     return level
@@ -116,7 +113,6 @@ export default () => {
         setTimeout(() => {
           const newLevel = determineNextLevel(newAnswers)
           const newWord = getNextWord(words, newAnswers, newLevel);
-          console.log(newWord)
           const wordsWithoutNewWord = words.filter(word => word.definition !== newWord.definition)
 
           setSelectionMade(false)
@@ -129,9 +125,7 @@ export default () => {
       } else if (selectedAnswer.correct === false) {
         setTimeout(() => {
           const newLevel = determineNextLevel(newAnswers)
-          console.log(newLevel)
           const newWord = getNextWord(words, newAnswers, newLevel);
-          console.log(newWord)
           const wordsWithoutNewWord = words.filter(word => word.definition !== newWord.definition)
 
           setSelectionMade(false)
