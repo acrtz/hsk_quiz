@@ -19,11 +19,10 @@ export default () => {
   const { answers, setAnswers, words, setWords } = useContext(AppContext);
   const [possibleAnswers, setPossibleAnswers] = useState([]);
   const [currentWord, setCurrentWord] = useState({});
-  const [selectionMade, setSelectionMade] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState({});
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [currentLevel, setCurrentLevel] = useState(1);
 
-  const getNextWord = (words, answers, level) => {
+  const getNextWord = ({ words, answers, level }) => {
     const currentLevelWords = words.filter(word => word.level === level);
     const answerDefinitions = answers.map(answer => answer.simplified)
 
@@ -33,8 +32,8 @@ export default () => {
   }
 
   const loadQuiz = async () => {
-    const words = await Student.getHskQuiz();
-    return { words }
+    const { quiz: words } = await Student.getHskQuiz();
+    setNextQuestion({ words })
   }
 
   const isSynonym = (targetWord, possibleSynonym) => {
@@ -63,103 +62,69 @@ export default () => {
     return shuffle(answers);
   }
 
-  const recordSelection = (answer) => {
-    const selectedAnswer = {
-      ...answer,
-      selected: true
-    }
-    possibleAnswers.splice(possibleAnswers.indexOf(answer), 1, selectedAnswer)
-    setSelectedAnswer(selectedAnswer)
-    setPossibleAnswers(possibleAnswers.splice(possibleAnswers))
-    setSelectionMade(true)
-  }
-
   const determineNextLevel = (answers) => {
-    let level = currentLevel
-    const latestAnswerIsCorrect = answers[answers.length - 1]['correct']
+    let level = currentLevel;
 
     if (answers.length <= 1) {
-      return level
+      return level;
     }
-    if (latestAnswerIsCorrect && answers[answers.length - 2]['correct']) {
+
+    const sameLevelTwoInARowCorrect = answers[answers.length - 1]['correct'] &&
+      answers[answers.length - 2]['correct'] &&
+      answers[answers.length - 1].level === answers[answers.length - 2].level;
+
+    if (sameLevelTwoInARowCorrect) {
       if (level !== 6) {
-        level++
+        level++;
       }
-      return level
+      return level;
     }
-    if (level !== 1 && !latestAnswerIsCorrect) {
-      level--
+
+    if (level !== 1 && !answers[answers.length - 1]['correct']) {
+      level--;
     }
-    return level
+    return level;
   }
 
   useEffect(() => {
-    const getWords = async () => {
-      const { words: { quiz } } = await loadQuiz().catch(err => console.log(err.message))
-      const newWord = getNextWord(quiz, [], 1)
-      const wordsWithoutNewWord = quiz.filter(word => word.definition !== newWord.definition)
-      console.log(newWord)
-      setCurrentWord(newWord);
-      setWords(wordsWithoutNewWord);
-      setPossibleAnswers(createAnswers(newWord, wordsWithoutNewWord));
-    }
-    getWords();
+    loadQuiz();
   }, []);
 
-  useEffect(() => {
-    if (selectionMade) {
-      const newAnswers = [...answers, selectedAnswer]
-      if (selectedAnswer.correct === true) {
-        setTimeout(() => {
-          const newLevel = determineNextLevel(newAnswers)
-          const newWord = getNextWord(words, newAnswers, newLevel);
-          const wordsWithoutNewWord = words.filter(word => word.definition !== newWord.definition)
+  const setNextQuestion = ({ words, answer }) => {
+    const answersArray = [...answers];
+    
+    //skipped for the initial setup
+    if(answer)
+      answersArray.push(answer);
 
-          setSelectionMade(false)
-          setAnswers(newAnswers)
-          setWords(wordsWithoutNewWord)
-          setCurrentWord(newWord)
-          setCurrentLevel(newLevel)
-          setPossibleAnswers(createAnswers(newWord, wordsWithoutNewWord))
-        }, 2000)
-      } else if (selectedAnswer.correct === false) {
-        setTimeout(() => {
-          const newLevel = determineNextLevel(newAnswers)
-          const newWord = getNextWord(words, newAnswers, newLevel);
-          const wordsWithoutNewWord = words.filter(word => word.definition !== newWord.definition)
+    const newLevel = determineNextLevel(answersArray)
+    const newWord = getNextWord({ words, answers: answersArray, level: newLevel })
+    const wordsWithoutNewWord = words.filter(word => word.definition !== newWord.definition)
+    
+    setAnswers(answersArray)
+    setCurrentWord(newWord);
+    setWords(wordsWithoutNewWord);
+    setCurrentLevel(newLevel);
+    setPossibleAnswers(createAnswers(newWord, wordsWithoutNewWord));
+  }
 
-          setSelectionMade(false)
-          setAnswers(newAnswers)
-          setWords(wordsWithoutNewWord)
-          setCurrentWord(newWord)
-          setCurrentLevel(newLevel)
-          setPossibleAnswers(createAnswers(newWord, wordsWithoutNewWord))
-        }, 3000)
-      }
-    }
-  }, [selectionMade])
+  const onSubmit = (answer) => {
+    setSelectedAnswer(answer);
+    setTimeout(() => {
+      setNextQuestion({ words, answer })
+    }, answers.correct ? 2000 : 3000);
+  }
 
   return (
     <Main>
       <Progress completion={answers.length}></Progress>
-      <Word>{currentWord.simplified}</Word>
+      <Word>{currentWord.simplified}: {currentWord.level}</Word>
       <Answers>
-        {possibleAnswers.map(answer => <AnswerButton key={answer.definition} answer={answer} recordSelection={recordSelection} selectionMade={selectionMade} />)}
+        {possibleAnswers.map(answer => <AnswerButton onSubmit={()=>onSubmit(answer)} key={answer.definition} answer={answer} selectedAnswer={selectedAnswer} />)}
       </Answers>
     </Main>
   )
 }
-
-// const Main = styled.div`
-//   min-height: calc(100vh - 100px);
-//   width: 100vw;
-//   display: flex;
-//   justify-content: center;
-//   padding-top: 40px;
-//   box-sizing: border-box;
-//   overflow: hidden;
-//   overflow-y: scroll; 
-// `;
 
 const Main = styled.div`
   margin: 20px;
