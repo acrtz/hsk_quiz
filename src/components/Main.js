@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import AppContext from '../context/app';
 import Student from '../api/student';
 import AnswerButton from './AnswerButton';
-import { create } from 'handlebars';
+import Modal from './Modal';
 
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -110,9 +110,14 @@ export default () => {
 
   const onSubmit = (answer) => {
     setSelectedAnswer(answer);
-    setTimeout(() => {
-      setNextQuestion({ words, answer })
-    }, answers.correct ? 2000 : 3000);
+    setNextQuestion({ words, answer });
+    // setTimeout(() => {
+
+    // }, answers.correct ? 2000 : 3000);
+  }
+
+  if (answers.length >= 10) {
+    return <Modal />
   }
 
   return (
@@ -122,6 +127,7 @@ export default () => {
       <Answers>
         {possibleAnswers.map(answer => <AnswerButton onSubmit={() => onSubmit(answer)} key={answer.definition} answer={answer} selectedAnswer={selectedAnswer} />)}
       </Answers>
+      {/* {answers.length >= 10 && <Modal />} */}
     </Main>
   )
 }
