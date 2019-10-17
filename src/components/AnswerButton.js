@@ -5,7 +5,7 @@ import styled from 'styled-components';
 export default (props) => {
   const { answer, selectedAnswer, onSubmit } = props
   const correct = selectedAnswer && selectedAnswer.correct && answer.simplified === selectedAnswer.simplified;
-  const incorrect = selectedAnswer && selectedAnswer.incorrect && answer.simplified === selectedAnswer.simplified;
+  const incorrect = selectedAnswer && !selectedAnswer.correct && answer.simplified === selectedAnswer.simplified;
   return (
     <AnswerButton correct={correct} incorrect={incorrect} onClick={onSubmit} >
       {answer.definition}
@@ -20,22 +20,22 @@ const AnswerButton = styled.button`
   background-color: rgb(221, 231, 251);
   border: solid 4px rgb(199, 209, 229);
 
-  ${({correct})=>
+  ${({ correct }) =>
     correct ? `
       color: rgb(70, 116, 37);
       background-color: rgb(218, 231, 212);
       border-color: rgb(202, 220, 189);
     ` :
-    null
+      null
   }
 
-  ${({incorrect})=>
+  ${({ incorrect }) =>
     incorrect ? `
       color: rgb(183, 50, 48);
       background-color: rgb(237, 204, 203);
       border-color: rgb(212, 174, 171);
     ` :
-    null
+      null
   }
 
   :hover {

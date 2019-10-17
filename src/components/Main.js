@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import AppContext from '../context/app';
 import Student from '../api/student';
 import AnswerButton from './AnswerButton';
-import { create } from 'handlebars';
+import Modal from './Modal';
 
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -92,15 +92,15 @@ export default () => {
 
   const setNextQuestion = ({ words, answer }) => {
     const answersArray = [...answers];
-    
+
     //skipped for the initial setup
-    if(answer)
+    if (answer)
       answersArray.push(answer);
 
     const newLevel = determineNextLevel(answersArray)
     const newWord = getNextWord({ words, answers: answersArray, level: newLevel })
     const wordsWithoutNewWord = words.filter(word => word.definition !== newWord.definition)
-    
+
     setAnswers(answersArray)
     setCurrentWord(newWord);
     setWords(wordsWithoutNewWord);
@@ -110,17 +110,19 @@ export default () => {
 
   const onSubmit = (answer) => {
     setSelectedAnswer(answer);
-    setTimeout(() => {
-      setNextQuestion({ words, answer })
-    }, answers.correct ? 2000 : 3000);
+    setNextQuestion({ words, answer });
+    // setTimeout(() => {
+
+    // }, answers.correct ? 2000 : 3000);
   }
 
   return (
     <Main>
       <Progress completion={answers.length}></Progress>
-      <Word>{currentWord.simplified}: {currentWord.level}</Word>
+      <Word>{currentWord.simplified}</Word>
+      {answers.length >= 10 && <Modal />}
       <Answers>
-        {possibleAnswers.map(answer => <AnswerButton onSubmit={()=>onSubmit(answer)} key={answer.definition} answer={answer} selectedAnswer={selectedAnswer} />)}
+        {possibleAnswers.map(answer => <AnswerButton onSubmit={() => onSubmit(answer)} key={answer.definition} answer={answer} selectedAnswer={selectedAnswer} />)}
       </Answers>
     </Main>
   )

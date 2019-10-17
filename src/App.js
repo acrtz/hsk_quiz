@@ -11,7 +11,6 @@ export default () => {
     <AppState>
       <Navbar />
       <Main />
-      <Modal />
     </AppState>
   );
 }
