@@ -116,18 +116,14 @@ export default () => {
     // }, answers.correct ? 2000 : 3000);
   }
 
-  if (answers.length >= 10) {
-    return <Modal />
-  }
-
   return (
     <Main>
       <Progress completion={answers.length}></Progress>
       <Word>{currentWord.simplified}</Word>
+      {answers.length >= 10 && <Modal />}
       <Answers>
         {possibleAnswers.map(answer => <AnswerButton onSubmit={() => onSubmit(answer)} key={answer.definition} answer={answer} selectedAnswer={selectedAnswer} />)}
       </Answers>
-      {/* {answers.length >= 10 && <Modal />} */}
     </Main>
   )
 }
