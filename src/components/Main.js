@@ -110,17 +110,16 @@ export default () => {
 
   const onSubmit = (answer) => {
     setSelectedAnswer(answer);
-    setNextQuestion({ words, answer });
-    // setTimeout(() => {
-
-    // }, answers.correct ? 2000 : 3000);
+    setTimeout(() => {
+      setNextQuestion({ words, answer });
+    }, answers.correct ? 2000 : 3000);
   }
 
   return (
     <Main>
       <Progress completion={answers.length}></Progress>
       <Word>{currentWord.simplified}</Word>
-      {answers.length >= 10 && <Modal />}
+      {answers.length >= 30 && <Modal />}
       <Answers>
         {possibleAnswers.map(answer => <AnswerButton onSubmit={() => onSubmit(answer)} key={answer.definition} answer={answer} selectedAnswer={selectedAnswer} />)}
       </Answers>
@@ -164,7 +163,7 @@ const Answers = styled.div`
   grid-template: 1fr 1fr / 1fr 1fr;
 `
 
-const SelectionStatusBox = styled.div`
-  color: ${props => props.status === 'incorrect' ? "red" : "green"};
-  text-transform: capitalized;
-`
+// const SelectionStatusBox = styled.div`
+//   color: ${props => props.status === 'incorrect' ? "red" : "green"};
+//   text-transform: capitalized;
+// `

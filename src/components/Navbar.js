@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 export default () => {
 
-  const { student, setStudent } = useContext(AppContext);
+  const { student } = useContext(AppContext);
 
   return (
     <Navbar>

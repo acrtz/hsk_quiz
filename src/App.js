@@ -2,7 +2,7 @@ import React from 'react';
 import AppState from './AppState';
 import Navbar from './components/Navbar'
 import Main from './components/Main'
-import Modal from './components/Modal'
+
 
 export default () => {
   return (

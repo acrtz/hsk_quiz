@@ -13,6 +13,7 @@ export default () => {
       if (answer.level === level && answer.correct === correct) {
         return answer
       }
+      return null;
     });
 
     return selectedAnswers.length;
