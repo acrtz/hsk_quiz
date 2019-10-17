@@ -92,15 +92,15 @@ export default () => {
 
   const setNextQuestion = ({ words, answer }) => {
     const answersArray = [...answers];
-    
+
     //skipped for the initial setup
-    if(answer)
+    if (answer)
       answersArray.push(answer);
 
     const newLevel = determineNextLevel(answersArray)
     const newWord = getNextWord({ words, answers: answersArray, level: newLevel })
     const wordsWithoutNewWord = words.filter(word => word.definition !== newWord.definition)
-    
+
     setAnswers(answersArray)
     setCurrentWord(newWord);
     setWords(wordsWithoutNewWord);
@@ -118,9 +118,9 @@ export default () => {
   return (
     <Main>
       <Progress completion={answers.length}></Progress>
-      <Word>{currentWord.simplified}: {currentWord.level}</Word>
+      <Word>{currentWord.simplified}</Word>
       <Answers>
-        {possibleAnswers.map(answer => <AnswerButton onSubmit={()=>onSubmit(answer)} key={answer.definition} answer={answer} selectedAnswer={selectedAnswer} />)}
+        {possibleAnswers.map(answer => <AnswerButton onSubmit={() => onSubmit(answer)} key={answer.definition} answer={answer} selectedAnswer={selectedAnswer} />)}
       </Answers>
     </Main>
   )
